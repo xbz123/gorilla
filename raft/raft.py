@@ -25,7 +25,8 @@ logger = logging.getLogger("raft")
 DocType = Literal["api", "pdf", "json", "txt"]
 
 # Every N chunks, save checkpoint
-N = 15
+N = 5
+
 
 def get_args() -> argparse.Namespace:
     """
@@ -44,8 +45,8 @@ def get_args() -> argparse.Namespace:
     parser.add_argument("--chunk_size", type=int, default=512, help="The size of each chunk in number of tokens")
     parser.add_argument("--doctype", type=str, default="pdf", help="The type of the document, must be one of the accepted doctypes", choices=["pdf", "txt", "json", "api"])
     parser.add_argument("--openai_key", type=str, default=None, help="Your OpenAI key used to make queries to GPT-3.5 or GPT-4")
-    parser.add_argument("--embedding_model", type=str, default="gpt-4o", help="The embedding model to use to encode documents chunks (text-embedding-ada-002, ...)")
-    parser.add_argument("--completion_model", type=str, default="gpt4-turbo", help="The model to use to generate questions and answers (gpt-3.5, gpt-4, ...)")
+    parser.add_argument("--embedding_model", type=str, default="text-embedding-ada-002", help="The embedding model to use to encode documents chunks (text-embedding-ada-002, ...)")
+    parser.add_argument("--completion_model", type=str, default="llama3-70b-8192", help="The model to use to generate questions and answers (gpt-3.5, gpt-4, ...)")
     parser.add_argument("--fast", action="store_true", help="Run the script in fast mode (no recovery implemented)")
 
     args = parser.parse_args()
@@ -100,12 +101,14 @@ def get_chunks(
         num_chunks = ceil(len(text) / chunk_size)
         logger.info(f"Splitting text into {num_chunks} chunks using the {model} model.")
 
+        openai_key = 'sk-409PBtBFBIzJq2v2657d183677E8412fA2B063D54c4aD9F2'
         embeddings = build_langchain_embeddings(openai_api_key=openai_key, model=model)
         text_splitter = SemanticChunker(embeddings, number_of_chunks=num_chunks)
         chunks = text_splitter.create_documents([text])
         chunks = [chunk.page_content for chunk in chunks]
             
     return chunks
+
 
 def generate_instructions(client: OpenAI, api_call: Any, x=5, model: str = None) -> list[str]:
     """
@@ -128,6 +131,7 @@ def generate_instructions(client: OpenAI, api_call: Any, x=5, model: str = None)
 
     return queries
 
+
 def generate_instructions_gen(client: OpenAI, chunk: Any, x: int = 5, model: str = None) -> list[str]:
     """
     Generates `x` questions / use cases for `chunk`. Used when the input document is of general types 
@@ -148,6 +152,7 @@ def generate_instructions_gen(client: OpenAI, chunk: Any, x: int = 5, model: str
 
     return queries 
 
+
 def strip_str(s: str) -> str:
     """
     Helper function for helping format strings returned by GPT-4.
@@ -164,6 +169,7 @@ def strip_str(s: str) -> str:
     r += 2
     return s[l:min(r, len(s))]
 
+
 def encode_question(question: str, api: Any) -> list[str]:
     """
     Encode multiple prompt instructions into a single string for the `api` case.
@@ -174,6 +180,7 @@ def encode_question(question: str, api: Any) -> list[str]:
     prompts.append({"role": "system", "content": "You are a helpful API writer who can write APIs based on requirements."})
     prompts.append({"role": "user", "content": prompt})
     return prompts
+
 
 def encode_question_gen(question: str, chunk: Any) -> list[str]:
     """
@@ -193,6 +200,7 @@ def encode_question_gen(question: str, chunk: Any) -> list[str]:
     prompts.append({"role": "system", "content": "You are a helpful question answerer who can provide an answer given a question and relevant context."})
     prompts.append({"role": "user", "content": prompt})
     return prompts
+
 
 def generate_label(client: OpenAI, question: str, context: Any, doctype: DocType = "pdf", model: str = None) -> str | None:
     """
@@ -305,7 +313,7 @@ def main():
     OPENAPI_API_KEY = args.openai_key
 
     client = build_openai_client(
-        api_key=OPENAPI_API_KEY,
+        api_key='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',
     )
 
     CHUNK_SIZE = args.chunk_size

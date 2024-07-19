@@ -7,6 +7,17 @@ env_prefix_whitelist = [
     'AZURE_OPENAI'
 ]
 
+env = {
+    'OPENAI_API_KEY': '<sk-9wmB0spjovtGutlWA63aA6318aA94d6bAd5aFcB98c29A5Af>',
+    'OPENAI_BASE_URL':'https://openai.linktre.cc/v1',
+    'COMPLETION_OPENAI_BASE_URL':'https://api.groq.com/openai/v1',
+    'COMPLETION_OPENAI_API_KEY':'<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>',
+    'EMBEDDING_OPENAI_BASE_URL':'https://openai.linktre.cc/v1',
+    'EMBEDDING_OPENAI_API_KEY':'<sk-409PBtBFBIzJq2v2657d183677E8412fA2B063D54c4aD9F2>',
+}
+
+
+
 def read_env_config(use_prefix: str, env: dict = os.environ) -> str:
     """
     Read whitelisted environment variables and return them in a dictionary.
